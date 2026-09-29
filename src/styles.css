@@ -537,3 +537,65 @@ h1 { margin-bottom: 9px; font-size: clamp(26px, 3vw, 34px); line-height: 1.2; fo
 @media (prefers-reduced-motion: reduce) {
   .command-palette-dialog, .shortcut-help-dialog, .command-option { animation: none !important; transition: none !important; scroll-behavior: auto; }
 }
+
+/* Data-driven workspace dashboard */
+.home-dashboard { display: grid; gap: 17px; }
+.dashboard-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; }
+.dashboard-metric { display: flex; min-width: 0; min-height: 101px; align-items: flex-start; gap: 11px; padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.dashboard-metric-icon { display: grid; width: 32px; height: 32px; flex: 0 0 32px; place-items: center; border-radius: 8px; background: var(--accent-soft); color: var(--accent-ink); }
+.dashboard-metric-copy { display: grid; min-width: 0; gap: 3px; }
+.dashboard-metric-copy > span { color: var(--text-soft); font-size: 10px; font-weight: 600; }
+.dashboard-metric-copy strong { color: var(--text); font: 700 22px/1.15 Manrope, sans-serif; }
+.dashboard-metric-copy small { color: var(--text-faint); font-size: 9px; line-height: 1.4; }
+.dashboard-metric-calm .dashboard-metric-icon { background: var(--surface-muted); color: var(--text-soft); }
+.dashboard-task-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.dashboard-task-panel { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.dashboard-task-panel-overdue { border-color: color-mix(in srgb, #bd9a67 35%, var(--line)); }
+.dashboard-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 15px 12px; border-bottom: 1px solid var(--line); background: var(--surface-muted); }
+.dashboard-panel-heading h2 { margin: 0 0 4px; color: var(--text); font: 700 13px Manrope, sans-serif; }
+.dashboard-panel-heading p { margin: 0; color: var(--text-faint); font-size: 9px; line-height: 1.45; }
+.dashboard-panel-count { display: grid; min-width: 22px; height: 22px; place-items: center; padding: 0 5px; border-radius: 7px; background: var(--surface); color: var(--text-soft); font-size: 9px; font-weight: 700; }
+.dashboard-task-panel-overdue .dashboard-panel-count { background: color-mix(in srgb, #bd9a67 14%, var(--surface)); color: color-mix(in srgb, #8b6530 85%, var(--text)); }
+.dashboard-task-list { margin: 0; padding: 0; list-style: none; }
+.dashboard-task-list li + li { border-top: 1px solid var(--line); }
+.dashboard-task-link { display: flex; width: 100%; min-height: 57px; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 14px; border: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.dashboard-task-link:hover { background: var(--surface-muted); }
+.dashboard-task-link:focus-visible { position: relative; outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent); outline-offset: -3px; }
+.dashboard-task-main { display: grid; min-width: 0; gap: 4px; }
+.dashboard-task-main strong { overflow: hidden; font-size: 10px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-task-main small { overflow: hidden; color: var(--text-faint); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-task-meta { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
+.dashboard-task-status, .dashboard-task-date { max-width: 125px; overflow: hidden; color: var(--text-soft); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-task-date { color: var(--text-faint); }
+.dashboard-task-panel-overdue .dashboard-task-date { color: color-mix(in srgb, #8b6530 76%, var(--text-soft)); }
+.dashboard-list-empty { display: grid; min-height: 96px; align-content: center; gap: 4px; padding: 14px 16px; }
+.dashboard-list-empty strong { color: var(--text); font-size: 10px; font-weight: 650; }
+.dashboard-list-empty span { color: var(--text-faint); font-size: 9px; line-height: 1.5; }
+.project-progress-wrap { display: flex; max-width: 260px; align-items: center; gap: 9px; margin-top: 6px; color: var(--text-faint); font-size: 9px; }
+.project-progress { width: min(130px, 30vw); height: 6px; flex: 0 1 130px; overflow: hidden; border: 0; border-radius: 6px; appearance: none; background: var(--surface-muted); }
+.project-progress::-webkit-progress-bar { border-radius: 6px; background: var(--surface-muted); }
+.project-progress::-webkit-progress-value { border-radius: 6px; background: var(--accent); }
+.project-progress::-moz-progress-bar { border-radius: 6px; background: var(--accent); }
+.project-progress-empty { color: var(--text-faint); }
+.project-card .project-preview-copy { gap: 4px; }
+.project-card .project-preview-copy > span { white-space: normal; }
+@media (max-width: 900px) {
+  .dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .dashboard-task-panels { grid-template-columns: 1fr; }
+  .dashboard-metric { min-height: 91px; padding: 12px; }
+  .dashboard-task-link { align-items: flex-start; }
+  .dashboard-task-meta { max-width: 38%; text-align: right; }
+  .dashboard-task-status, .dashboard-task-date { max-width: 100%; }
+  .project-progress-wrap { flex-wrap: wrap; }
+  .project-progress { width: min(150px, 42vw); }
+}
+@media (max-width: 390px) {
+  .dashboard-metrics { gap: 7px; }
+  .dashboard-metric { gap: 8px; padding: 10px 8px; }
+  .dashboard-metric-icon { width: 28px; height: 28px; flex-basis: 28px; }
+  .dashboard-metric-copy > span { font-size: 9px; }
+  .dashboard-metric-copy strong { font-size: 19px; }
+  .dashboard-metric-copy small { font-size: 8px; }
+}

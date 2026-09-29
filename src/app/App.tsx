@@ -14,6 +14,8 @@ import { ProjectTaskWorkspace, type ProjectTaskView, type ProjectWorkspaceComman
 import { GlobalTaskSearch } from '../features/search/GlobalTaskSearch'
 import { CommandPalette, type PaletteCommand } from '../features/commands/CommandPalette'
 import { ShortcutHelpDialog } from '../features/commands/ShortcutHelpDialog'
+import { HomeDashboard } from '../features/dashboard/HomeDashboard'
+import { selectDashboardData, type ProjectProgress } from '../features/dashboard/dashboardSelectors'
 
 type DialogState = { kind: 'create' } | { kind: 'edit' | 'delete'; project: Project }
 
@@ -245,7 +247,7 @@ function App() {
         </header>
         <main id="main-content" className="main-content" tabIndex={-1}>
           <Routes>
-            <Route path="/" element={<HomePage projects={orderedProjects} activeProjectId={activeProjectId} onOpen={openProject} onCreate={openCreate} onEdit={openEdit} onDelete={openDelete} onFavorite={toggleFavorite} />} />
+            <Route path="/" element={<HomePage projects={projects} tasks={tasks} activeProjectId={activeProjectId} onOpen={openProject} onOpenTask={(project, task) => navigate(`/projects/${encodeURIComponent(project.id)}`, { state: { openTaskId: task.id } })} onCreate={openCreate} onEdit={openEdit} onDelete={openDelete} onFavorite={toggleFavorite} />} />
             <Route path="/projects/:projectId" element={<ProjectPage projects={projects} tasks={tasks} activeProjectId={activeProjectId} projectView={projectView} onProjectViewChange={setProjectView} onConsumeRouteCommand={consumeProjectCommand} onCreateTask={createTask} onUpdateTask={updateTask} onChecklistChange={updateChecklist} onDeleteTask={deleteTask} onMoveTask={moveTask} onTaskSaved={taskSaved} onTaskDeleted={taskDeleted} onOpen={openProject} onEdit={openEdit} onDelete={openDelete} onFavorite={toggleFavorite} />} />
             <Route path="/search" element={<GlobalTaskSearch projects={projects} tasks={tasks} inputRef={searchInputRef} onOpenTask={(project, task) => navigate(`/projects/${project.id}`, { state: { openTaskId: task.id } })} />} />
             <Route path="/settings" element={<SettingsPage theme={theme} onThemeChange={setTheme} onOpenShortcuts={openShortcutHelp} />} />
@@ -278,21 +280,23 @@ interface ProjectActions {
   onFavorite: (id: string) => unknown
 }
 
-function HomePage({ projects, activeProjectId, onOpen, onCreate, onEdit, onDelete, onFavorite }: ProjectActions & { projects: Project[]; activeProjectId: string | null; onCreate: () => void }) {
+function HomePage({ projects, tasks, activeProjectId, onOpen, onOpenTask, onCreate, onEdit, onDelete, onFavorite }: ProjectActions & { projects: Project[]; tasks: Task[]; activeProjectId: string | null; onCreate: () => void; onOpenTask: (project: Project, task: Task) => void }) {
+  const dashboard = selectDashboardData(projects, tasks)
+  const recentProjects = dashboard.recentProjects
   return <div className="page-wrap">
-    <PageIntro eyebrow="YOUR WORKSPACE" title="A little more clarity.">Keep your projects together in one focused place. Create a project to give your work a home.</PageIntro>
-    <section className="welcome-card" aria-labelledby="welcome-title"><div className="welcome-content"><div className="card-kicker"><span className="sparkle-small"><Icon name="spark" size={15}/></span> YOUR WORKSPACE, AT A GLANCE</div><h2 id="welcome-title">A calm place to get things moving.</h2><p>Your project list is stored on this device and ready for the work you bring to it.</p><span className="preview-label">PROJECT WORKSPACE</span></div><div className="welcome-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/><div className="art-card"><span className="art-icon"><Icon name="projects" size={20}/></span><div className="art-lines"><i/><i/><i/></div><span className="art-check">✓</span></div><div className="art-spark"><Icon name="spark" size={25}/></div></div></section>
-    <section className="section-block" aria-labelledby="projects-heading"><div className="section-title-row"><div><div className="eyebrow">YOUR WORK</div><h2 id="projects-heading">Projects <span className="count-pill">{projects.length}</span></h2></div><button type="button" className="button button-secondary" onClick={onCreate}><Icon name="plus" size={15}/>New project</button></div>
-      {projects.length ? <div className="project-list">{projects.map(project => <ProjectCard key={project.id} project={project} active={activeProjectId === project.id} {...{ onOpen, onEdit, onDelete, onFavorite }} />)}</div> : <div className="project-empty"><div className="empty-icon"><Icon name="projects" size={23}/></div><h2>No projects yet</h2><p>Create a project to start organizing your work.</p><button type="button" className="button button-primary" onClick={onCreate}><Icon name="plus" size={15}/>Create your first project</button></div>}
+    <PageIntro eyebrow="WORKSPACE OVERVIEW" title="Your work, in one place.">A clear view of your projects and the tasks that need attention.</PageIntro>
+    <HomeDashboard data={dashboard} onOpenTask={onOpenTask} />
+    <section className="section-block" aria-labelledby="projects-heading"><div className="section-title-row"><div><div className="eyebrow">SORTED BY LAST UPDATED</div><h2 id="projects-heading">Recent projects <span className="count-pill">{projects.length}</span></h2></div><button type="button" className="button button-secondary" onClick={onCreate}><Icon name="plus" size={15}/>New project</button></div>
+      {recentProjects.length ? <div className="project-list">{recentProjects.map(project => <ProjectCard key={project.id} project={project} active={activeProjectId === project.id} progress={dashboard.progressByProject.get(project.id)} {...{ onOpen, onEdit, onDelete, onFavorite }} />)}</div> : <div className="project-empty"><div className="empty-icon"><Icon name="projects" size={23}/></div><h2>No projects yet</h2><p>Create a project to start organizing your work.</p><button type="button" className="button button-primary" onClick={onCreate}><Icon name="plus" size={15}/>Create your first project</button></div>}
     </section>
   </div>
 }
 
-function ProjectCard({ project, active, onOpen, onEdit, onDelete, onFavorite }: ProjectActions & { project: Project; active: boolean }) {
+function ProjectCard({ project, active, progress, onOpen, onEdit, onDelete, onFavorite }: ProjectActions & { project: Project; active: boolean; progress?: ProjectProgress }) {
   const sample = sampleProjectIds.has(project.id)
   return <article className={`project-preview project-card${active ? ' selected' : ''}`}>
     <div className="project-symbol"><Icon name="projects"/></div>
-    <div className="project-preview-copy"><strong>{project.name}</strong><span>{project.description || 'No description added.'}</span>{sample && <small className="sample-inline">Sample project</small>}</div>
+    <div className="project-preview-copy"><strong>{project.name}</strong><span>{project.description || 'No description added.'}</span>{sample && <small className="sample-inline">Sample project</small>}{progress && <ProjectProgressView project={project} progress={progress} />}</div>
     <div className="project-card-actions">
       <button type="button" className={`icon-button action-button${project.favorite ? ' favorite-on' : ''}`} aria-label={`${project.favorite ? 'Remove' : 'Add'} ${project.name} ${project.favorite ? 'from' : 'to'} favorites`} aria-pressed={project.favorite} title={project.favorite ? 'Remove from favorites' : 'Add to favorites'} onClick={() => onFavorite(project.id)}><Icon name="star" size={17}/></button>
       <button type="button" className="icon-button action-button" aria-label={`Edit ${project.name}`} title="Edit project" onClick={() => onEdit(project)}><Icon name="edit" size={16}/></button>
@@ -300,6 +304,12 @@ function ProjectCard({ project, active, onOpen, onEdit, onDelete, onFavorite }: 
       <button type="button" className="button button-secondary open-project-button" onClick={() => onOpen(project)}>Open project<Icon name="chevron" size={14}/></button>
     </div>
   </article>
+}
+
+function ProjectProgressView({ project, progress }: { project: Project; progress: ProjectProgress }) {
+  return <div className="project-progress-wrap" aria-label={`${project.name} progress`}>
+    {progress.total > 0 ? <><progress className="project-progress" value={progress.completed} max={progress.total} aria-label={`${project.name}: ${progress.completed} of ${progress.total} tasks completed`} /><span>{progress.completed} of {progress.total} done · {progress.percent}%</span></> : <span className="project-progress-empty">No tasks yet</span>}
+  </div>
 }
 
 function ProjectPage({ projects, tasks, activeProjectId, projectView, onProjectViewChange, onConsumeRouteCommand, onCreateTask, onUpdateTask, onChecklistChange, onDeleteTask, onMoveTask, onTaskSaved, onTaskDeleted, onOpen, onEdit, onDelete, onFavorite }: ProjectActions & { projects: Project[]; tasks: Task[]; activeProjectId: string | null; projectView: ProjectTaskView; onProjectViewChange: (view: ProjectTaskView) => void; onConsumeRouteCommand: () => void; onCreateTask: (projectId: string, draft: TaskDraft) => { task: Task | null; persisted: boolean }; onUpdateTask: (taskId: string, projectId: string, draft: TaskDraft) => { task: Task | null; persisted: boolean }; onChecklistChange: (taskId: string, projectId: string, checklist: ChecklistItem[]) => { updated: boolean; persisted: boolean }; onDeleteTask: (taskId: string, projectId: string) => { deleted: boolean; persisted: boolean }; onMoveTask: (taskId: string, projectId: string, status: TaskStatus, position: number) => { moved: boolean; persisted: boolean }; onTaskSaved: (kind: 'created' | 'updated', persisted: boolean) => void; onTaskDeleted: (title: string, persisted: boolean) => void }) {
