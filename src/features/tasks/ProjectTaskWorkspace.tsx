@@ -12,6 +12,9 @@ import { TaskFilterBar } from './TaskFilterBar'
 import { countActiveTaskFilters, emptyTaskFilters, filterProjectTasks, projectColumnsInOrder, sortTasksForList, type TaskFilters, type TaskSort } from '../../utils/taskSelectors'
 import { formatTaskDueDate } from '../../utils/taskDates'
 
+export type ProjectWorkspaceCommand = 'create-task' | 'clear-filters'
+export type ProjectTaskView = 'board' | 'list'
+
 type TaskDialogState = { kind: 'create'; status?: TaskStatus } | { kind: 'edit'; task: Task }
 type TaskChange = { task: Task | null; persisted: boolean }
 
@@ -26,14 +29,18 @@ interface ProjectTaskWorkspaceProps {
   onTaskDeleted: (title: string, persisted: boolean) => void
   onMoveTask: (taskId: string, projectId: string, status: TaskStatus, position: number) => { moved: boolean; persisted: boolean }
   initialTaskId?: string | null
+  view: ProjectTaskView
+  onViewChange: (view: ProjectTaskView) => void
+  routeCommand?: ProjectWorkspaceCommand | null
+  routeCommandKey?: string
+  onConsumeRouteCommand?: () => void
 }
 
 const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High', urgent: 'Urgent' } as const
 
-export function ProjectTaskWorkspace({ project, tasks, initialTaskId, onCreateTask, onUpdateTask, onTaskSaved, onChecklistChange, onDeleteTask, onTaskDeleted, onMoveTask }: ProjectTaskWorkspaceProps) {
+export function ProjectTaskWorkspace({ project, tasks, initialTaskId, view, onViewChange, routeCommand, routeCommandKey, onConsumeRouteCommand, onCreateTask, onUpdateTask, onTaskSaved, onChecklistChange, onDeleteTask, onTaskDeleted, onMoveTask }: ProjectTaskWorkspaceProps) {
   const [dialog, setDialog] = useState<TaskDialogState | null>(null)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(initialTaskId ?? null)
-  const [view, setView] = useState<'board' | 'list'>('board')
   const [filters, setFilters] = useState<TaskFilters>(emptyTaskFilters)
   const [sort, setSort] = useState<TaskSort>('manual')
   const addTaskButtonRef = useRef<HTMLButtonElement>(null)
@@ -45,6 +52,12 @@ export function ProjectTaskWorkspace({ project, tasks, initialTaskId, onCreateTa
   useEffect(() => {
     if (initialTaskId) setSelectedTaskId(initialTaskId)
   }, [initialTaskId])
+
+  useEffect(() => {
+    if (routeCommand === 'create-task') setDialog({ kind: 'create' })
+    if (routeCommand === 'clear-filters') setFilters(emptyTaskFilters)
+    if (routeCommand) onConsumeRouteCommand?.()
+  }, [routeCommand, routeCommandKey, onConsumeRouteCommand])
 
   function saveTask(draft: TaskDraft) {
     const editing = dialog?.kind === 'edit'
@@ -68,7 +81,7 @@ export function ProjectTaskWorkspace({ project, tasks, initialTaskId, onCreateTa
   }
 
   return <section className="task-workspace" aria-labelledby="task-section-title">
-    <div className="task-section-heading"><div><div className="eyebrow">PROJECT WORK</div><h2 id="task-section-title">Tasks <span className="count-pill">{projectTasks.length}</span></h2></div><div className="task-heading-actions"><div className="view-switch" role="group" aria-label="Task view"><button type="button" aria-pressed={view === 'board'} className={view === 'board' ? 'selected' : ''} onClick={() => setView('board')}>Board</button><button type="button" aria-pressed={view === 'list'} className={view === 'list' ? 'selected' : ''} onClick={() => setView('list')}>List</button></div><button ref={addTaskButtonRef} type="button" className="button button-primary" onClick={() => setDialog({ kind: 'create' })}><Icon name="plus" size={15}/>Add task</button></div></div>
+    <div className="task-section-heading"><div><div className="eyebrow">PROJECT WORK</div><h2 id="task-section-title">Tasks <span className="count-pill">{projectTasks.length}</span></h2></div><div className="task-heading-actions"><div className="view-switch" role="group" aria-label="Task view"><button type="button" aria-pressed={view === 'board'} className={view === 'board' ? 'selected' : ''} onClick={() => onViewChange('board')}>Board</button><button type="button" aria-pressed={view === 'list'} className={view === 'list' ? 'selected' : ''} onClick={() => onViewChange('list')}>List</button></div><button ref={addTaskButtonRef} type="button" className="button button-primary" onClick={() => setDialog({ kind: 'create' })}><Icon name="plus" size={15}/>Add task</button></div></div>
     <TaskFilterBar project={project} tasks={projectTasks} filters={filters} activeCount={activeFilterCount} onChange={setFilters} onClear={() => setFilters(emptyTaskFilters)} />
     {view === 'list' && <div className="task-sort-control"><label htmlFor="task-sort">Sort list by</label><select id="task-sort" value={sort} onChange={event => setSort(event.target.value as TaskSort)}><option value="manual">Manual order</option><option value="priority">Priority</option><option value="due-date">Due date</option><option value="created-date">Created date</option><option value="title">Title A to Z</option></select></div>}
     {visibleTasks.length === 0 && activeFilterCount > 0 ? <div className="task-filter-empty"><h3>No tasks match these filters</h3><p>Clear filters to see all tasks in this project.</p><button type="button" className="button button-secondary" onClick={() => setFilters(emptyTaskFilters)}>Clear filters</button></div> : view === 'board' ? <ProjectBoard project={project} tasks={visibleTasks} allProjectTasks={projectTasks} isProjectEmpty={projectTasks.length === 0} dragDisabled={activeFilterCount > 0} onOpenTask={setSelectedTaskId} onEditTask={task => setDialog({ kind: 'edit', task })} onAddTask={status => setDialog({ kind: 'create', status })} onMoveTask={(taskId, status, position) => onMoveTask(taskId, project.id, status, position)} /> : projectTasks.length === 0 ? <div className="task-empty"><div className="empty-icon"><Icon name="projects" size={23}/></div><h3>No tasks in this project yet</h3><p>Add a task to capture the next thing you want to work on.</p><button type="button" className="button button-primary" onClick={() => setDialog({ kind: 'create' })}><Icon name="plus" size={15}/>Add the first task</button></div> : <div className="task-groups" aria-label={`Tasks grouped by status in ${project.name}`}>

@@ -468,6 +468,7 @@ h1 { margin-bottom: 9px; font-size: clamp(26px, 3vw, 34px); line-height: 1.2; fo
 .board-drag-handle:disabled { cursor: not-allowed; opacity: .4; }
 @media (max-width: 680px) {
   .global-search-trigger { width: 33px; height: 33px; flex: 0 0 33px; margin-left: auto; }
+  .command-palette-trigger { width: 33px; height: 33px; flex: 0 0 33px; margin-left: 3px; }
   .topbar-create { margin-left: 5px; }
   .task-filter-panel { align-items: flex-start; }
   .task-filter-controls { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -478,4 +479,61 @@ h1 { margin-bottom: 9px; font-size: clamp(26px, 3vw, 34px); line-height: 1.2; fo
   .search-result-main { grid-column: 1; }
   .search-result-status, .search-result .priority-label, .search-result-date { grid-column: 1; }
   .search-result > svg { grid-column: 2; grid-row: 1 / span 4; }
+}
+
+/* Command palette and shortcut reference */
+.command-palette-trigger { width: 36px; height: 36px; margin-left: 5px; border: 1px solid var(--line); background: var(--surface); color: var(--text-soft); }
+.command-palette-trigger:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.command-palette-dialog, .shortcut-help-dialog { position: fixed; inset: 0; width: min(610px, calc(100% - 30px)); max-width: 610px; max-height: min(78vh, 660px); margin: auto; padding: 0; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 13px; background: var(--surface); color: var(--text); box-shadow: 0 26px 75px rgba(22, 34, 30, .28); }
+.command-palette-dialog::backdrop, .shortcut-help-dialog::backdrop { background: rgba(19, 27, 25, .48); backdrop-filter: blur(3px); }
+.command-palette { display: flex; max-height: min(78vh, 660px); flex-direction: column; }
+.command-palette-search { display: flex; min-height: 61px; align-items: center; gap: 12px; padding: 0 15px; border-bottom: 1px solid var(--line); color: var(--text-faint); }
+.command-palette-search input { min-width: 0; height: 58px; flex: 1; border: 0; outline: none; background: transparent; color: var(--text); font-size: 14px; }
+.command-palette-search input::placeholder { color: var(--text-faint); }
+.command-palette-search kbd, .command-palette-footer kbd, .command-option kbd, .shortcut-group kbd { display: inline-flex; min-height: 22px; align-items: center; justify-content: center; padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-muted); color: var(--text-faint); font: 10px 'DM Sans', sans-serif; white-space: nowrap; }
+.command-palette-search .icon-button { width: 30px; height: 30px; flex: 0 0 30px; }
+.command-palette-prompt { margin: 0; padding: 11px 17px 3px; color: var(--text-faint); font-size: 10px; }
+.command-palette-results { min-height: 88px; overflow-y: auto; padding: 3px 9px 9px; }
+.command-group { margin-top: 8px; }
+.command-group h3 { margin: 0; padding: 7px 9px 5px; color: var(--text-faint); font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+.command-option { display: flex; min-height: 39px; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid transparent; border-radius: 7px; color: var(--text-soft); cursor: pointer; }
+.command-option-selected { border-color: color-mix(in srgb, var(--accent) 20%, transparent); background: var(--accent-soft); color: var(--accent-ink); }
+.command-option-disabled { color: var(--text-faint); cursor: not-allowed; opacity: .78; }
+.command-option-label { display: grid; min-width: 0; flex: 1; gap: 2px; font-size: 11px; font-weight: 550; }
+.command-option-label small { color: var(--text-faint); font-size: 9px; font-weight: 400; }
+.command-option > svg { color: var(--text-faint); }
+.command-palette-empty { display: grid; min-height: 118px; align-content: center; justify-items: center; gap: 5px; color: var(--text); font-size: 11px; }
+.command-palette-empty span { color: var(--text-faint); font-size: 10px; }
+.command-palette-footer { display: flex; min-height: 40px; align-items: center; gap: 16px; padding: 0 15px; border-top: 1px solid var(--line); color: var(--text-faint); font-size: 9px; }
+.command-palette-footer span { display: inline-flex; align-items: center; gap: 4px; }
+.command-palette-footer kbd { min-height: 19px; padding: 1px 5px; }
+.settings-shortcuts { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 15px; padding: 16px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.settings-shortcuts h2 { margin: 0 0 4px; font: 700 12px Manrope, sans-serif; }
+.settings-shortcuts p { margin: 0; color: var(--text-soft); font-size: 10px; line-height: 1.5; }
+.shortcut-help-dialog { width: min(540px, calc(100% - 30px)); max-width: 540px; max-height: min(86vh, 720px); overflow-y: auto; }
+.shortcut-help-content { padding: 23px; }
+.shortcut-help-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 19px; }
+.shortcut-help-heading .eyebrow { margin-bottom: 7px; }
+.shortcut-help-heading h2 { margin: 0 0 5px; font: 700 19px Manrope, sans-serif; letter-spacing: -.4px; }
+.shortcut-help-heading p { margin: 0; color: var(--text-soft); font-size: 10px; line-height: 1.5; }
+.shortcut-group + .shortcut-group { margin-top: 17px; }
+.shortcut-group h3 { margin: 0 0 6px; color: var(--text-faint); font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+.shortcut-group dl { margin: 0; border-top: 1px solid var(--line); }
+.shortcut-group dl > div { display: flex; min-height: 37px; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.shortcut-group dt { color: var(--text); font-size: 10px; }
+.shortcut-group dd { display: flex; flex: 0 0 auto; gap: 4px; margin: 0; }
+.shortcut-group kbd { color: var(--text-soft); }
+.shortcut-note { margin: 14px 0 0; color: var(--text-faint); font-size: 9px; line-height: 1.5; }
+.shortcut-help-actions { display: flex; justify-content: flex-end; margin-top: 17px; }
+.command-palette-dialog :focus-visible, .shortcut-help-dialog :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .command-palette-dialog { width: calc(100% - 20px); max-height: 88vh; border-radius: 11px; }
+  .command-palette { max-height: 88vh; }
+  .command-palette-footer { justify-content: space-between; gap: 5px; padding: 0 10px; }
+  .shortcut-help-content { padding: 18px 15px; }
+  .shortcut-group dt { max-width: 54%; line-height: 1.4; }
+  .settings-shortcuts { align-items: flex-start; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .command-palette-dialog, .shortcut-help-dialog, .command-option { animation: none !important; transition: none !important; scroll-behavior: auto; }
 }
