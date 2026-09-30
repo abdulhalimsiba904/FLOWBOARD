@@ -95,13 +95,16 @@ function BoardTaskCard({ task, index, group, columnName, columns, onOpen, onEdit
 }) {
   const { ref, handleRef, isDragging, isDropTarget } = useSortable({ id: task.id, index, group, type: 'task', accept: 'task', disabled: dragDisabled })
   return <article ref={ref} className={`board-task-card${isDragging ? ' board-task-dragging' : ''}${isDropTarget ? ' board-task-target' : ''}`}>
-    <div className="board-card-top"><span className={`priority-label priority-${task.priority}`}>Priority: {priorityLabels[task.priority]}</span><button ref={handleRef} type="button" className="board-drag-handle" disabled={dragDisabled} aria-label={dragDisabled ? `Reordering ${task.title} is paused while filters are active` : `Move ${task.title} with keyboard or drag`} title={dragDisabled ? 'Clear filters to reorder tasks' : 'Drag to move; keyboard: Space or Enter, then arrows'}><Icon name="grip" size={16}/></button></div>
-    <button type="button" className="board-task-title" aria-label={`Open details for ${task.title}`} onClick={onOpen}>{task.title}</button>
-    {task.description && <p className="board-task-description">{task.description}</p>}
-    {(task.dueDate || task.tags.length > 0) && <div className="board-task-meta">{task.dueDate && <span>Due {formatTaskDueDate(task.dueDate)}</span>}{task.tags.length > 0 && <span>{task.tags.join(' · ')}</span>}</div>}
-    {task.checklist.length > 0 && <div className="board-checklist-progress">{task.checklist.filter(item => item.completed).length} of {task.checklist.length} checklist items complete</div>}
-    <div className="board-card-actions"><button type="button" className="icon-button action-button" aria-label={`Edit ${task.title}`} title="Edit task" onClick={onEdit}><Icon name="edit" size={15}/></button>
+    <header className="board-card-top"><span className={`board-priority-badge priority-${task.priority}`}>Priority: {priorityLabels[task.priority]}</span><button ref={handleRef} type="button" className="board-drag-handle" disabled={dragDisabled} aria-label={dragDisabled ? `Reordering ${task.title} is paused while filters are active` : `Move ${task.title} with keyboard or drag`} title={dragDisabled ? 'Clear filters to reorder tasks' : 'Drag to move; keyboard: Space or Enter, then arrows'}><Icon name="grip" size={16}/></button></header>
+    <div className="board-card-body">
+      <button type="button" className="board-task-title" aria-label={`Open details for ${task.title}`} onClick={onOpen}>{task.title}</button>
+      {task.description && <p className="board-task-description">{task.description}</p>}
+      {(task.dueDate || task.tags.length > 0) && <div className="board-task-meta">{task.dueDate && <span>Due {formatTaskDueDate(task.dueDate)}</span>}{task.tags.length > 0 && <span>{task.tags.join(' · ')}</span>}</div>}
+      {task.checklist.length > 0 && <div className="board-checklist-progress">{task.checklist.filter(item => item.completed).length} of {task.checklist.length} checklist items complete</div>}
+    </div>
+    <div className="board-card-actions">
       <label className="sr-only" htmlFor={`move-task-${task.id}`}>Move {task.title} to status</label><select id={`move-task-${task.id}`} className="board-status-select" aria-label={`Move ${task.title} to status`} value={group} onChange={event => onMove(event.target.value as TaskStatus)}>{columns.map(column => <option key={column.id} value={column.id}>{column.name}</option>)}</select>
+      <button type="button" className="icon-button action-button" aria-label={`Edit ${task.title}`} title="Edit task" onClick={onEdit}><Icon name="edit" size={15}/></button>
     </div>
     <span className="sr-only">Currently in {columnName}.</span>
   </article>
